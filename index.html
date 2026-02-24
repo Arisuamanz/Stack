@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stack - World Record Attempt</title>
+    <title>Stack - Versi Santai & Cozy</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
@@ -13,9 +13,11 @@
             width: 100%;
             height: 100%;
             overflow: hidden;
-            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
-            touch-action: none; /* Prevent zooming/scrolling on mobile */
+            /* Gradien warna pastel yang lebih lembut */
+            background: linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%);
+            touch-action: none; /* Mencegah zoom/scroll di HP */
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            user-select: none;
         }
         #game-container {
             position: absolute;
@@ -32,7 +34,7 @@
             width: 100%;
             height: 100%;
             z-index: 10;
-            pointer-events: none; /* Let clicks pass through to the game container */
+            pointer-events: none;
             display: flex;
             flex-direction: column;
             justify-content: space-between;
@@ -41,51 +43,127 @@
             pointer-events: auto;
         }
         
-        /* Transition for smooth background color changes */
         body {
-            transition: background 2s ease;
+            transition: background 3s ease;
         }
     </style>
 </head>
 <body>
 
-    <!-- 3D Game Canvas Container -->
+    <!-- Container Canvas 3D -->
     <div id="game-container"></div>
 
-    <!-- UI Overlay -->
+    <!-- Lapisan UI (Tampilan Layar) -->
     <div id="ui-layer" class="p-6">
         <div class="flex justify-between items-start w-full">
             <div id="score-display" class="text-6xl font-light text-white drop-shadow-md transition-all transform scale-100">0</div>
             <div class="text-right">
-                <div id="combo-display" class="text-xl font-bold text-white drop-shadow-md opacity-0 transition-opacity">Perfect!</div>
-                <div id="best-score" class="text-lg font-medium text-white/80 drop-shadow-md">Best: 0</div>
+                <div id="combo-display" class="text-xl font-bold text-white drop-shadow-md opacity-0 transition-opacity">Sempurna!</div>
+                <div id="best-score" class="text-lg font-medium text-white/80 drop-shadow-md">Terbaik: 0</div>
             </div>
         </div>
 
-        <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/20 backdrop-blur-sm pointer-events-auto transition-opacity duration-300">
-            <h1 class="text-5xl font-bold text-white mb-2 drop-shadow-lg tracking-wider">STACK</h1>
-            <p class="text-white/90 mb-8 text-lg drop-shadow">Tap or click to drop the blocks</p>
-            <button id="start-btn" class="px-8 py-4 bg-white text-gray-800 font-bold rounded-full shadow-xl hover:bg-gray-100 transform hover:scale-105 transition-all active:scale-95 text-xl">
-                Play Now
-            </button>
+        <!-- Layar Mulai -->
+        <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/10 backdrop-blur-sm pointer-events-auto transition-opacity duration-500">
+            <h1 class="text-6xl font-extrabold text-white mb-2 drop-shadow-lg tracking-wider">STACK</h1>
+            <p class="text-white/90 mb-8 text-xl font-medium drop-shadow animate-pulse">Ketuk layar untuk mulai</p>
         </div>
 
-        <div id="game-over-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/40 backdrop-blur-md pointer-events-auto opacity-0 hidden transition-opacity duration-300">
-            <h2 class="text-4xl font-bold text-white mb-2 drop-shadow-lg">Game Over</h2>
-            <p class="text-white/90 mb-6 text-xl" id="final-score-text">Score: 0</p>
-            <button id="restart-btn" class="px-8 py-4 bg-white text-gray-800 font-bold rounded-full shadow-xl hover:bg-gray-100 transform hover:scale-105 transition-all active:scale-95 text-xl">
-                Try Again
+        <!-- Layar Game Over -->
+        <div id="game-over-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/30 backdrop-blur-md pointer-events-auto opacity-0 hidden transition-opacity duration-500">
+            <h2 class="text-5xl font-bold text-white mb-2 drop-shadow-lg">Permainan Berakhir</h2>
+            <p class="text-white/90 mb-8 text-2xl font-medium drop-shadow" id="final-score-text">Skor: 0</p>
+            <button id="restart-btn" class="px-8 py-4 bg-white/90 text-gray-700 font-bold rounded-full shadow-xl hover:bg-white transform hover:scale-105 transition-all active:scale-95 text-xl pointer-events-auto">
+                Coba Lagi
             </button>
         </div>
     </div>
 
 <script>
 /**
- * STACK GAME LOGIC
- * Built with Three.js
+ * LOGIKA GAME STACK
+ * Dibuat dengan Three.js & Web Audio API (Cozy Edition)
  */
 
-// --- Game Variables ---
+// --- Pengaturan Audio API yang Lebih Santai (Cozy) ---
+let audioCtx;
+
+function initAudio() {
+    if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    if (audioCtx.state === 'suspended') {
+        audioCtx.resume();
+    }
+}
+
+// Fungsi utama untuk membuat nada yang lembut
+function playCozyTone(freq, type = 'sine', attack = 0.05, release = 0.5, volume = 0.2) {
+    if (!audioCtx) return;
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    
+    // Tambahkan lowpass filter agar suaranya tidak tajam di telinga
+    const filter = audioCtx.createBiquadFilter();
+    filter.type = 'lowpass';
+    filter.frequency.value = freq * 1.5; // Menyaring frekuensi tinggi yang kasar
+    
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    
+    // Envelope (Bentuk suara: memudar masuk perlahan, memudar keluar perlahan)
+    gain.gain.setValueAtTime(0, audioCtx.currentTime);
+    gain.gain.linearRampToValueAtTime(volume, audioCtx.currentTime + attack);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + attack + release);
+    
+    osc.connect(filter);
+    filter.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + attack + release);
+}
+
+function playDropSound() {
+    // Suara "thud" (ketukan kayu/marimba) yang pelan dan hangat
+    playCozyTone(180, 'sine', 0.02, 0.3, 0.2);
+}
+
+function playPerfectSound(comboCount) {
+    // Tangga nada Pentatonik (sangat rileks dan santai) - 2 Oktaf
+    const pentatonic = [
+        261.63, // C4
+        293.66, // D4
+        329.63, // E4
+        392.00, // G4
+        440.00, // A4
+        523.25, // C5
+        587.33, // D5
+        659.25, // E5
+        783.99, // G5
+        880.00  // A5
+    ];
+    
+    // Batasi agar tidak melampaui array, lalu berputar kembali dengan perlahan
+    const noteIndex = comboCount % pentatonic.length;
+    const freq = pentatonic[noteIndex];
+    
+    // Suara utama mirip vibraphone (lembut, memudar lama)
+    playCozyTone(freq, 'sine', 0.05, 0.8, 0.15);
+    
+    // Tambahkan sedikit harmoni tipis jika combonya sudah lumayan tinggi
+    if (comboCount > 3) {
+        playCozyTone(freq * 1.5, 'sine', 0.1, 0.6, 0.03); // Nada kelima (Perfect fifth) pelan
+    }
+}
+
+function playGameOverSound() {
+    // Suara game over berupa chord bass yang perlahan memudar, tidak kasar
+    playCozyTone(130.81, 'sine', 0.1, 1.5, 0.2); // C3
+    playCozyTone(98.00, 'sine', 0.2, 1.5, 0.2);  // G2
+}
+
+// --- Variabel Game ---
 let scene, camera, renderer;
 let stack = [];
 let overhangs = [];
@@ -93,57 +171,57 @@ let activeBlock = null;
 
 const BLOCK_HEIGHT = 1;
 const INITIAL_SIZE = 6;
-const MOVE_SPEED_START = 0.15;
+const MOVE_SPEED_START = 0.12; // Sedikit diperlambat agar lebih rileks
 let currentSpeed = MOVE_SPEED_START;
-const TOLERANCE = 0.15; // How close to perfect alignment needed to snap
+const TOLERANCE = 0.25; // Toleransi sedikit diperbesar agar lebih santai
 
 let score = 0;
-let bestScore = localStorage.getItem('stack_best_score') || 0;
+// Mengambil high score dari localStorage
+let bestScore = parseInt(localStorage.getItem('stack_best_score_cozy')) || 0;
 let combo = 0;
 let gameStarted = false;
 let gameOver = false;
-let currentAxis = 'x'; // 'x' or 'z'
+let currentAxis = 'x';
 let movingDir = 1;
 
-// Colors
+// Warna awal pastel
 let hueStart = Math.random();
 
-// UI Elements
+// Elemen UI
 const scoreDisplay = document.getElementById('score-display');
 const bestScoreDisplay = document.getElementById('best-score');
 const comboDisplay = document.getElementById('combo-display');
 const startScreen = document.getElementById('start-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
-const startBtn = document.getElementById('start-btn');
 const restartBtn = document.getElementById('restart-btn');
 const finalScoreText = document.getElementById('final-score-text');
 
-bestScoreDisplay.innerText = `Best: ${bestScore}`;
+bestScoreDisplay.innerText = `Terbaik: ${bestScore}`;
 
-// --- Initialization ---
+// --- Inisialisasi ---
 function init() {
-    // 1. Scene Setup
+    // 1. Setup Scene
     scene = new THREE.Scene();
 
-    // 2. Camera Setup (Orthographic for isometric look)
+    // 2. Setup Kamera (Ortografik untuk tampilan isometrik)
     const aspect = window.innerWidth / window.innerHeight;
     const d = 10;
     camera = new THREE.OrthographicCamera(-d * aspect, d * aspect, d, -d, 1, 1000);
     camera.position.set(10, 10, 10);
     camera.lookAt(0, 0, 0);
 
-    // 3. Renderer Setup
+    // 3. Setup Renderer
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
     renderer.shadowMap.enabled = true;
-    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap; // Bayangan lembut
     document.getElementById('game-container').appendChild(renderer.domElement);
 
-    // 4. Lighting
-    const ambientLight = new THREE.AmbientLight(0xffffff, 0.6);
+    // 4. Pencahayaan
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.7); // Sedikit diterangkan
     scene.add(ambientLight);
 
-    const dirLight = new THREE.DirectionalLight(0xffffff, 0.6);
+    const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 5);
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 1024;
@@ -154,18 +232,23 @@ function init() {
     dirLight.shadow.camera.bottom = -15;
     scene.add(dirLight);
 
-    // Handle Resize
+    // Resize event
     window.addEventListener('resize', onWindowResize, false);
 
-    // Controls
+    // Event interaksi
     window.addEventListener('mousedown', handleInteraction);
-    window.addEventListener('touchstart', (e) => { e.preventDefault(); handleInteraction(); }, { passive: false });
+    window.addEventListener('touchstart', (e) => { 
+        if(e.target === restartBtn) return; 
+        e.preventDefault(); 
+        handleInteraction(); 
+    }, { passive: false });
     window.addEventListener('keydown', (e) => { if (e.code === 'Space') handleInteraction(); });
 
-    startBtn.addEventListener('click', startGame);
-    restartBtn.addEventListener('click', resetGame);
+    restartBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        resetGame();
+    });
 
-    // Initial setup
     createBase();
     animate();
 }
@@ -181,26 +264,26 @@ function onWindowResize() {
     renderer.setSize(window.innerWidth, window.innerHeight);
 }
 
-// --- Materials & Colors ---
+// --- Material & Warna Pastel ---
 function getBlockMaterial(index) {
     const color = new THREE.Color();
-    color.setHSL((hueStart + index * 0.015) % 1, 0.6, 0.6);
+    // Warna diatur lebih terang dan soft (saturation menengah, lightness tinggi)
+    color.setHSL((hueStart + index * 0.01) % 1, 0.5, 0.75);
     return new THREE.MeshLambertMaterial({ color: color });
 }
 
 function updateBackground(index) {
-    const color1 = new THREE.Color().setHSL((hueStart + index * 0.015) % 1, 0.7, 0.85).getHexString();
-    const color2 = new THREE.Color().setHSL((hueStart + index * 0.015 + 0.1) % 1, 0.7, 0.75).getHexString();
+    const color1 = new THREE.Color().setHSL((hueStart + index * 0.01) % 1, 0.6, 0.85).getHexString();
+    const color2 = new THREE.Color().setHSL((hueStart + index * 0.01 + 0.1) % 1, 0.6, 0.75).getHexString();
     document.body.style.background = `linear-gradient(135deg, #${color1} 0%, #${color2} 100%)`;
 }
 
-// --- Game Logic ---
+// --- Logika Permainan ---
 function createBase() {
     const geometry = new THREE.BoxGeometry(INITIAL_SIZE, BLOCK_HEIGHT * 10, INITIAL_SIZE);
     const material = getBlockMaterial(0);
     const base = new THREE.Mesh(geometry, material);
     
-    // Position base so its top is at y=0
     base.position.set(0, -BLOCK_HEIGHT * 5 + (BLOCK_HEIGHT / 2), 0);
     base.receiveShadow = true;
     base.castShadow = true;
@@ -229,7 +312,6 @@ function spawnBlock() {
     activeBlock.castShadow = true;
     activeBlock.receiveShadow = true;
 
-    // Spawn far away depending on axis
     const startOffset = 15;
     if (currentAxis === 'x') {
         activeBlock.position.set(-startOffset, yPos, topBlock.z);
@@ -238,18 +320,21 @@ function spawnBlock() {
     }
     
     scene.add(activeBlock);
-    movingDir = 1; // Always start moving positively towards the center
+    movingDir = 1;
 }
 
 function handleInteraction() {
-    if (!gameStarted || gameOver) return;
+    initAudio(); // Wajib untuk membuka AudioContext di browser modern
+
+    if (gameOver) return;
+    
+    if (!gameStarted) {
+        startGame();
+        return;
+    }
 
     const topBlock = stack[stack.length - 1];
-    
-    // 1. Calculate Intersection
-    let tx1, tx2, cx1, cx2; // top min/max, current min/max
-    let isPerfect = false;
-    let sizeDim = currentAxis === 'x' ? 'width' : 'depth';
+    let tx1, tx2, cx1, cx2;
     let posDim = currentAxis;
 
     if (currentAxis === 'x') {
@@ -268,9 +353,7 @@ function handleInteraction() {
     const overlapMax = Math.min(tx2, cx2);
     const overlapSize = overlapMax - overlapMin;
 
-    // 2. Evaluate Hit, Miss, or Perfect
     if (overlapSize <= 0) {
-        // Complete Miss -> Game Over
         dropFullBlock(activeBlock);
         endGame();
         return;
@@ -279,26 +362,23 @@ function handleInteraction() {
     const delta = Math.abs(activeBlock.position[posDim] - topBlock[posDim]);
 
     if (delta <= TOLERANCE) {
-        // Perfect Placement
-        isPerfect = true;
+        // Penempatan Sempurna
         combo++;
+        playPerfectSound(combo - 1);
         
-        // Visual flair for perfect
         createPerfectFlash(topBlock.x, stack.length * BLOCK_HEIGHT, topBlock.z, topBlock.width, topBlock.depth);
         showComboText(combo);
         
-        // Snap to exact position
         activeBlock.position[posDim] = topBlock[posDim];
         
-        // Block Growth Mechanics (If combo > 5, grow block slightly)
         let newWidth = topBlock.width;
         let newDepth = topBlock.depth;
         
         if (combo >= 5) {
-            if (currentAxis === 'x' && newWidth < INITIAL_SIZE) newWidth = Math.min(INITIAL_SIZE, newWidth + 0.5);
-            if (currentAxis === 'z' && newDepth < INITIAL_SIZE) newDepth = Math.min(INITIAL_SIZE, newDepth + 0.5);
+            const growthAmount = 0.5;
+            if (currentAxis === 'x' && newWidth < INITIAL_SIZE) newWidth = Math.min(INITIAL_SIZE, newWidth + growthAmount);
+            if (currentAxis === 'z' && newDepth < INITIAL_SIZE) newDepth = Math.min(INITIAL_SIZE, newDepth + growthAmount);
             
-            // Rebuild mesh if it grew
             scene.remove(activeBlock);
             const geom = new THREE.BoxGeometry(newWidth, BLOCK_HEIGHT, newDepth);
             const mat = getBlockMaterial(stack.length);
@@ -309,18 +389,13 @@ function handleInteraction() {
             scene.add(activeBlock);
         }
 
-        stack.push({
-            mesh: activeBlock,
-            width: newWidth,
-            depth: newDepth,
-            x: activeBlock.position.x,
-            z: activeBlock.position.z
-        });
+        stack.push({ mesh: activeBlock, width: newWidth, depth: newDepth, x: activeBlock.position.x, z: activeBlock.position.z });
 
     } else {
-        // Partial Hit -> Slice Block
+        // Penempatan Terpotong
         combo = 0;
         hideComboText();
+        playDropSound();
 
         const newCenter = (overlapMin + overlapMax) / 2;
         
@@ -329,7 +404,6 @@ function handleInteraction() {
         let newX = currentAxis === 'x' ? newCenter : topBlock.x;
         let newZ = currentAxis === 'z' ? newCenter : topBlock.z;
 
-        // Create exactly fitted block
         scene.remove(activeBlock);
         const fittedGeometry = new THREE.BoxGeometry(newWidth, BLOCK_HEIGHT, newDepth);
         const fittedMaterial = getBlockMaterial(stack.length);
@@ -339,20 +413,13 @@ function handleInteraction() {
         fittedBlock.receiveShadow = true;
         scene.add(fittedBlock);
 
-        stack.push({
-            mesh: fittedBlock,
-            width: newWidth,
-            depth: newDepth,
-            x: newX,
-            z: newZ
-        });
+        stack.push({ mesh: fittedBlock, width: newWidth, depth: newDepth, x: newX, z: newZ });
 
-        // Create Debris
         let debrisMin, debrisMax;
-        if (cx1 < tx1) { // Overhang on negative side
+        if (cx1 < tx1) {
             debrisMin = cx1;
             debrisMax = tx1;
-        } else { // Overhang on positive side
+        } else {
             debrisMin = tx2;
             debrisMax = cx2;
         }
@@ -368,13 +435,12 @@ function handleInteraction() {
         createDebris(debWidth, debDepth, debX, stack.length * BLOCK_HEIGHT, debZ, currentAxis, cx1 < tx1 ? -1 : 1, fittedMaterial);
     }
 
-    // 3. Setup Next Turn
     score++;
     updateScoreUI();
     updateBackground(score);
     
-    // Increase speed slightly over time
-    currentSpeed = Math.min(0.4, MOVE_SPEED_START + (score * 0.005));
+    // Kecepatan maksimal dibatasi agar tetap "santai" dan tidak terlalu brutal
+    currentSpeed = Math.min(0.25, MOVE_SPEED_START + (score * 0.003));
     
     currentAxis = currentAxis === 'x' ? 'z' : 'x';
     spawnBlock();
@@ -390,10 +456,10 @@ function createDebris(width, depth, x, y, z, axis, direction, material) {
     overhangs.push({
         mesh: mesh,
         vy: 0,
-        vx: axis === 'x' ? direction * 0.05 : 0,
-        vz: axis === 'z' ? direction * 0.05 : 0,
-        rx: axis === 'z' ? direction * 0.1 : 0,
-        rz: axis === 'x' ? -direction * 0.1 : 0
+        vx: axis === 'x' ? direction * 0.04 : 0,
+        vz: axis === 'z' ? direction * 0.04 : 0,
+        rx: axis === 'z' ? direction * 0.08 : 0,
+        rz: axis === 'x' ? -direction * 0.08 : 0
     });
 }
 
@@ -410,53 +476,51 @@ function dropFullBlock(blockMesh) {
 }
 
 function createPerfectFlash(x, y, z, w, d) {
-    // Simple expanding white plane
-    const geom = new THREE.PlaneGeometry(w + 1, d + 1);
-    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.8, side: THREE.DoubleSide });
+    let active = true;
+    let currentScale = 1.0;
+    
+    const geom = new THREE.BoxGeometry(w, 0.1, d);
+    const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
     const flash = new THREE.Mesh(geom, mat);
-    flash.rotation.x = -Math.PI / 2;
-    flash.position.set(x, y - (BLOCK_HEIGHT/2) + 0.01, z); // Just below the top surface
+    
+    flash.position.set(x, y, z);
     scene.add(flash);
 
-    // Quick animation loop for flash
-    let scale = 1;
-    let opacity = 0.8;
     const animateFlash = () => {
-        scale += 0.1;
-        opacity -= 0.05;
-        flash.scale.set(scale, scale, 1);
-        flash.material.opacity = opacity;
-        if (opacity > 0) {
-            requestAnimationFrame(animateFlash);
-        } else {
+        if (!active) return;
+        currentScale += 0.04;
+        flash.scale.set(currentScale, 1, currentScale);
+        flash.material.opacity -= 0.05;
+        
+        if (flash.material.opacity <= 0) {
             scene.remove(flash);
             flash.geometry.dispose();
             flash.material.dispose();
+            active = false;
+        } else {
+            requestAnimationFrame(animateFlash);
         }
     };
     animateFlash();
 }
 
-// --- UI Functions ---
+// --- Fungsi UI ---
 function updateScoreUI() {
     scoreDisplay.innerText = score;
-    // Tiny pop animation
     scoreDisplay.classList.remove('scale-100');
     scoreDisplay.classList.add('scale-110');
     setTimeout(() => {
         scoreDisplay.classList.remove('scale-110');
         scoreDisplay.classList.add('scale-100');
-    }, 100);
+    }, 150);
 }
 
 function showComboText(count) {
     if (count > 1) {
-        comboDisplay.innerText = `Perfect x${count}!`;
+        comboDisplay.innerText = `Sempurna x${count}!`;
         comboDisplay.style.opacity = 1;
-        
-        // Shake text slightly
-        comboDisplay.style.transform = `translateY(-5px)`;
-        setTimeout(() => { comboDisplay.style.transform = `translateY(0)`; }, 100);
+        comboDisplay.style.transform = `translateY(-3px)`;
+        setTimeout(() => { comboDisplay.style.transform = `translateY(0)`; }, 200);
     }
 }
 
@@ -465,31 +529,35 @@ function hideComboText() {
 }
 
 function startGame() {
-    startScreen.classList.add('opacity-0', 'hidden');
-    setTimeout(() => { startScreen.style.display = 'none'; }, 300);
+    startScreen.classList.add('opacity-0');
+    setTimeout(() => { 
+        startScreen.classList.add('hidden'); 
+    }, 500);
     gameStarted = true;
     spawnBlock();
 }
 
 function endGame() {
     gameOver = true;
+    playGameOverSound();
+    
     if (score > bestScore) {
         bestScore = score;
-        localStorage.setItem('stack_best_score', bestScore);
-        bestScoreDisplay.innerText = `Best: ${bestScore}`;
+        localStorage.setItem('stack_best_score_cozy', bestScore.toString());
+        bestScoreDisplay.innerText = `Terbaik: ${bestScore}`;
+        bestScoreDisplay.classList.add('text-green-200', 'font-bold', 'scale-110');
+        setTimeout(() => bestScoreDisplay.classList.remove('text-green-200', 'font-bold', 'scale-110'), 800);
     }
     
-    finalScoreText.innerText = `Score: ${score}`;
+    finalScoreText.innerText = `Skor Kamu: ${score}`;
     
     gameOverScreen.classList.remove('hidden');
-    // Small delay to allow CSS to render block before fading in
     setTimeout(() => {
         gameOverScreen.classList.remove('opacity-0');
-    }, 50);
+    }, 100);
 }
 
 function resetGame() {
-    // Clear scene
     stack.forEach(b => scene.remove(b.mesh));
     overhangs.forEach(o => scene.remove(o.mesh));
     if (activeBlock) scene.remove(activeBlock);
@@ -503,46 +571,43 @@ function resetGame() {
     currentSpeed = MOVE_SPEED_START;
     currentAxis = 'x';
     gameOver = false;
-    hueStart = Math.random(); // New color palette
+    hueStart = Math.random(); 
     
     updateScoreUI();
     hideComboText();
+    
+    camera.position.y = 10;
     
     gameOverScreen.classList.add('opacity-0');
     setTimeout(() => {
         gameOverScreen.classList.add('hidden');
         createBase();
         spawnBlock();
-    }, 300);
+    }, 500);
 }
 
-// --- Main Animation Loop ---
+// --- Loop Animasi Utama ---
 function animate() {
     requestAnimationFrame(animate);
 
-    // 1. Move Active Block
     if (gameStarted && !gameOver && activeBlock) {
         activeBlock.position[currentAxis] += currentSpeed * movingDir;
 
-        // Ping-pong boundary check
         const bounds = 15;
         if (activeBlock.position[currentAxis] > bounds || activeBlock.position[currentAxis] < -bounds) {
-            movingDir *= -1; // Reverse direction
-            // Snap inside bounds to prevent getting stuck
+            movingDir *= -1; 
             activeBlock.position[currentAxis] = Math.sign(activeBlock.position[currentAxis]) * bounds;
         }
     }
 
-    // 2. Camera Lerp (Follow Stack)
     if (stack.length > 0) {
         const targetY = (stack.length * BLOCK_HEIGHT) + 5;
-        camera.position.y += (targetY - camera.position.y) * 0.1;
+        camera.position.y += (targetY - camera.position.y) * 0.08; // Pergerakan kamera dibuat lebih halus
     }
 
-    // 3. Animate Debris (Gravity)
     for (let i = overhangs.length - 1; i >= 0; i--) {
         const oh = overhangs[i];
-        oh.vy -= 0.02; // Gravity
+        oh.vy -= 0.015; // Gravitasi sedikit lebih lambat
         oh.mesh.position.y += oh.vy;
         oh.mesh.position.x += oh.vx;
         oh.mesh.position.z += oh.vz;
@@ -550,9 +615,10 @@ function animate() {
         oh.mesh.rotation.x += oh.rx;
         oh.mesh.rotation.z += oh.rz;
 
-        // Remove if fallen out of view
         if (oh.mesh.position.y < camera.position.y - 30) {
             scene.remove(oh.mesh);
+            oh.mesh.geometry.dispose();
+            oh.mesh.material.dispose();
             overhangs.splice(i, 1);
         }
     }
@@ -560,10 +626,10 @@ function animate() {
     renderer.render(scene, camera);
 }
 
-// Boot up
 window.onload = init;
 
 </script>
 </body>
 </html>
+
 
