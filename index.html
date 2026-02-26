@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stack - Edisi Legenda</title>
+    <title>Stack - Edisi Legenda (Dioptimumkan)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
@@ -35,39 +35,24 @@
             z-index: 10;
             pointer-events: none;
         }
-        .pointer-events-auto {
-            pointer-events: auto;
-        }
-        body {
-            transition: background 3s ease;
-        }
+        .pointer-events-auto { pointer-events: auto; }
+        body { transition: background 3s ease; }
 
         /* --- SISTEM TIER CSS --- */
-        /* Tier D (0-20): Kelabu gelap, tanpa glow */
-        .tier-d { 
-            color: #9ca3af; 
-            text-shadow: none; 
-        }
-        /* Tier C (21-40): Hijau, soft glow ringan */
-        .tier-c { 
-            color: #4ade80; 
-            text-shadow: 0 0 10px rgba(74, 222, 128, 0.6); 
-        }
-        /* Tier B (41-70): Biru terang, gradien ringan */
+        .tier-d { color: #9ca3af; text-shadow: none; }
+        .tier-c { color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.6); }
         .tier-b {
             background: linear-gradient(to right, #60a5fa, #22d3ee);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.7));
         }
-        /* Tier A (71-100): Ungu neon, glow epik */
         .tier-a {
             background: linear-gradient(to right, #c084fc, #f472b6);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             filter: drop-shadow(0 0 20px rgba(192, 132, 252, 1));
         }
-        /* Tier S (100+): Emas (Gold) Legendary dengan animasi Shine */
         .tier-s {
             background: linear-gradient(to right, #fde047, #f59e0b, #fffbeb, #fde047);
             background-size: 200% auto;
@@ -76,29 +61,22 @@
             filter: drop-shadow(0 0 25px rgba(250, 204, 21, 1));
             animation: goldShine 2s linear infinite;
         }
+        @keyframes goldShine { to { background-position: 200% center; } }
 
-        @keyframes goldShine {
-            to { background-position: 200% center; }
-        }
-
-        /* Animasi Pop untuk Combo Sempurna */
         @keyframes popCombo {
             0% { transform: translate(-50%, -10px) scale(0.8); opacity: 0; }
             50% { transform: translate(-50%, 0) scale(1.1); opacity: 1; }
             100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
         }
-        .combo-active {
-            animation: popCombo 0.3s ease forwards;
-        }
+        .combo-active { animation: popCombo 0.3s ease forwards; }
     </style>
 </head>
 <body>
 
-    <!-- Container Canvas 3D -->
     <div id="game-container"></div>
 
     <div id="ui-layer">
-        <!-- Top Bar: Tier & Best Score -->
+        <!-- Top Bar -->
         <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
             <div class="flex items-center gap-3 bg-black/20 px-5 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-lg transition-transform duration-300" id="best-score-container">
                 <div id="best-tier-badge" class="text-3xl font-black tier-d italic pr-1">D</div>
@@ -109,10 +87,9 @@
             </div>
         </div>
 
-        <!-- Center Top Area: Main Score & Combo -->
+        <!-- Center Top Area -->
         <div class="absolute top-24 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
             <div id="score-display" class="text-8xl font-black text-white drop-shadow-lg transition-all transform scale-100 mb-2">0</div>
-            
             <div id="combo-display" class="text-2xl font-black text-yellow-300 drop-shadow-md opacity-0 absolute top-full mt-2 whitespace-nowrap tracking-wide">
                 Sempurna!
             </div>
@@ -124,19 +101,16 @@
             <p class="text-white/90 mb-8 text-2xl font-medium drop-shadow-md animate-pulse">Ketuk layar untuk mula</p>
         </div>
 
-        <!-- Game Over Screen (Centered) -->
+        <!-- Game Over Screen -->
         <div id="game-over-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md pointer-events-auto opacity-0 hidden transition-opacity duration-500">
             <div class="bg-white/10 p-10 rounded-3xl backdrop-blur-xl flex flex-col items-center shadow-2xl border border-white/20 min-w-[320px]">
                 <h2 class="text-2xl font-bold text-white mb-2 drop-shadow-lg text-center uppercase tracking-widest text-white/80">Permainan Tamat</h2>
-                
                 <div class="text-8xl font-black text-white mb-6 drop-shadow-xl" id="final-score-text">0</div>
-                
                 <div class="flex items-center justify-center gap-4 mb-10 bg-black/30 w-full py-4 rounded-2xl border border-white/10">
                     <span id="final-tier-badge" class="text-5xl font-black italic">D</span>
                     <span id="final-tier-name" class="text-lg font-bold uppercase tracking-widest text-white/80">Pemula</span>
                 </div>
-                
-                <button id="restart-btn" class="w-full py-4 bg-white text-blue-600 font-bold rounded-full shadow-[0_0_20px_rgba(255,255,255,0.4)] hover:bg-gray-100 transform hover:scale-105 transition-all active:scale-95 text-xl pointer-events-auto">
+                <button id="restart-btn" class="w-full py-4 bg-white text-blue-600 font-bold rounded-full shadow-xl hover:scale-105 transition-all active:scale-95 text-xl pointer-events-auto">
                     Cuba Lagi
                 </button>
             </div>
@@ -144,12 +118,7 @@
     </div>
 
 <script>
-/**
- * LOGIK GAME STACK - EDISI LEGENDA
- * Lengkap dengan fizik serpihan jatuh dan audio tinggi
- */
-
-// --- Fungsi Sistem Tier (Pangkat) Dikemas Kini ---
+// --- Fungsi Sistem Tier ---
 function getTierInfo(score) {
     if (score <= 20) return { label: 'D', className: 'tier-d', name: 'Pemula' };
     if (score <= 40) return { label: 'C', className: 'tier-c', name: 'Biasa' };
@@ -158,7 +127,7 @@ function getTierInfo(score) {
     return { label: 'S', className: 'tier-s', name: 'Legenda' };
 }
 
-// --- Pengaturan Audio API (Volume 200%) ---
+// --- Audio API ---
 let audioCtx;
 let masterGain;
 
@@ -166,12 +135,10 @@ function initAudio() {
     if (!audioCtx) {
         audioCtx = new (window.AudioContext || window.webkitAudioContext)();
         masterGain = audioCtx.createGain();
-        masterGain.gain.value = 3.0; // Volume Tinggi (200%+)
+        masterGain.gain.value = 3.0; 
         masterGain.connect(audioCtx.destination);
     }
-    if (audioCtx.state === 'suspended') {
-        audioCtx.resume();
-    }
+    if (audioCtx.state === 'suspended') audioCtx.resume();
 }
 
 function playCozyTone(freq, type = 'sine', attack = 0.05, release = 0.5, volume = 0.8) { 
@@ -198,22 +165,15 @@ function playCozyTone(freq, type = 'sine', attack = 0.05, release = 0.5, volume 
     osc.stop(audioCtx.currentTime + attack + release);
 }
 
-function playDropSound() {
-    playCozyTone(180, 'sine', 0.02, 0.3, 0.7); 
-}
+function playDropSound() { playCozyTone(180, 'sine', 0.02, 0.3, 0.7); }
 
 function playPerfectSound(comboCount) {
-    const pentatonic = [
-        261.63, 293.66, 329.63, 392.00, 440.00, 
-        523.25, 587.33, 659.25, 783.99, 880.00
-    ];
+    const pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00];
     const noteIndex = comboCount % pentatonic.length;
     const freq = pentatonic[noteIndex];
     
     playCozyTone(freq, 'sine', 0.05, 0.8, 0.6); 
-    if (comboCount > 3) {
-        playCozyTone(freq * 1.5, 'sine', 0.1, 0.6, 0.2); 
-    }
+    if (comboCount > 3) playCozyTone(freq * 1.5, 'sine', 0.1, 0.6, 0.2); 
 }
 
 function playGameOverSound() {
@@ -226,6 +186,9 @@ let scene, camera, renderer;
 let stack = [];
 let overhangs = [];
 let activeBlock = null;
+
+// TAMBAHAN BARU: Clock untuk mengukur Delta Time
+const clock = new THREE.Clock(); 
 
 const BLOCK_HEIGHT = 1;
 const INITIAL_SIZE = 6;
@@ -258,7 +221,6 @@ const finalScoreText = document.getElementById('final-score-text');
 const finalTierBadge = document.getElementById('final-tier-badge');
 const finalTierName = document.getElementById('final-tier-name');
 
-// --- Kemas kini UI Terbaik Permulaan ---
 function updateBestScoreUI(scr) {
     bestScoreValDisplay.innerText = scr;
     const tier = getTierInfo(scr);
@@ -280,6 +242,11 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
+    
+    // PENGOPTIMUMAN PRESTASI BARU: 
+    // Hadkan Pixel Ratio kepada maksimum 2 (mengelakkan lag di telefon beresolusi super tinggi)
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.getElementById('game-container').appendChild(renderer.domElement);
@@ -290,8 +257,9 @@ function init() {
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 5);
     dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 1024;
-    dirLight.shadow.mapSize.height = 1024;
+    // PENGOPTIMUMAN PRESTASI BARU: Kurangkan resolusi bayang-bayang sedikit untuk Webview
+    dirLight.shadow.mapSize.width = 512;
+    dirLight.shadow.mapSize.height = 512;
     dirLight.shadow.camera.left = -15;
     dirLight.shadow.camera.right = 15;
     dirLight.shadow.camera.top = 15;
@@ -300,7 +268,6 @@ function init() {
 
     window.addEventListener('resize', onWindowResize, false);
 
-    // Event interaksi
     const triggerInteraction = () => {
         initAudio();
         if (!gameStarted) startGame();
@@ -359,14 +326,7 @@ function createBase() {
     base.castShadow = true;
     
     scene.add(base);
-    stack.push({
-        mesh: base,
-        width: INITIAL_SIZE,
-        depth: INITIAL_SIZE,
-        x: 0,
-        z: 0
-    });
-    
+    stack.push({ mesh: base, width: INITIAL_SIZE, depth: INITIAL_SIZE, x: 0, z: 0 });
     updateBackground(0);
 }
 
@@ -423,10 +383,8 @@ function handleInteraction() {
     const delta = Math.abs(activeBlock.position[posDim] - topBlock[posDim]);
 
     if (delta <= TOLERANCE) {
-        // SEMPURNA
         combo++;
         playPerfectSound(combo - 1);
-        
         createPerfectFlash(topBlock.x, stack.length * BLOCK_HEIGHT, topBlock.z, topBlock.width, topBlock.depth);
         showComboText(combo);
         
@@ -453,13 +411,11 @@ function handleInteraction() {
         stack.push({ mesh: activeBlock, width: newWidth, depth: newDepth, x: activeBlock.position.x, z: activeBlock.position.z });
 
     } else {
-        // DIPOTONG
         combo = 0;
         hideComboText();
         playDropSound();
 
         const newCenter = (overlapMin + overlapMax) / 2;
-        
         let newWidth = currentAxis === 'x' ? overlapSize : topBlock.width;
         let newDepth = currentAxis === 'z' ? overlapSize : topBlock.depth;
         let newX = currentAxis === 'x' ? newCenter : topBlock.x;
@@ -476,19 +432,12 @@ function handleInteraction() {
 
         stack.push({ mesh: fittedBlock, width: newWidth, depth: newDepth, x: newX, z: newZ });
 
-        // Serpihan jatuh
         let debrisMin, debrisMax;
-        if (cx1 < tx1) {
-            debrisMin = cx1;
-            debrisMax = tx1;
-        } else {
-            debrisMin = tx2;
-            debrisMax = cx2;
-        }
+        if (cx1 < tx1) { debrisMin = cx1; debrisMax = tx1; } 
+        else { debrisMin = tx2; debrisMax = cx2; }
         
         const debrisSize = debrisMax - debrisMin;
         const debrisCenter = (debrisMin + debrisMax) / 2;
-        
         let debWidth = currentAxis === 'x' ? debrisSize : newWidth;
         let debDepth = currentAxis === 'z' ? debrisSize : newDepth;
         let debX = currentAxis === 'x' ? debrisCenter : newX;
@@ -542,7 +491,6 @@ function createPerfectFlash(x, y, z, w, d) {
     const geom = new THREE.BoxGeometry(w, 0.1, d);
     const mat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.6 });
     const flash = new THREE.Mesh(geom, mat);
-    
     flash.position.set(x, y, z);
     scene.add(flash);
 
@@ -551,11 +499,8 @@ function createPerfectFlash(x, y, z, w, d) {
         currentScale += 0.04;
         flash.scale.set(currentScale, 1, currentScale);
         flash.material.opacity -= 0.05;
-        
         if (flash.material.opacity <= 0) {
-            scene.remove(flash);
-            flash.geometry.dispose();
-            flash.material.dispose();
+            scene.remove(flash); flash.geometry.dispose(); flash.material.dispose();
             active = false;
         } else {
             requestAnimationFrame(animateFlash);
@@ -564,7 +509,6 @@ function createPerfectFlash(x, y, z, w, d) {
     animateFlash();
 }
 
-// --- Fungsi UI ---
 function updateScoreUI() {
     scoreDisplay.innerText = score;
     scoreDisplay.classList.remove('scale-100');
@@ -579,7 +523,7 @@ function showComboText(count) {
     if (count > 1) {
         comboDisplay.innerText = `Sempurna x${count}!`;
         comboDisplay.classList.remove('combo-active');
-        void comboDisplay.offsetWidth; // trigger reflow
+        void comboDisplay.offsetWidth; 
         comboDisplay.classList.add('combo-active');
     }
 }
@@ -591,10 +535,12 @@ function hideComboText() {
 
 function startGame() {
     startScreen.classList.add('opacity-0');
-    setTimeout(() => { 
-        startScreen.classList.add('hidden'); 
-    }, 500);
+    setTimeout(() => { startScreen.classList.add('hidden'); }, 500);
     gameStarted = true;
+    
+    // Mulakan jam (clock) selepas pemain klik Mula
+    clock.start();
+    
     spawnBlock();
 }
 
@@ -613,15 +559,12 @@ function endGame() {
         bestScore = score;
         localStorage.setItem('stack_best_score_tier_v3', bestScore.toString());
         updateBestScoreUI(bestScore);
-        
         bestScoreContainer.classList.add('scale-110', 'border-green-400');
         setTimeout(() => bestScoreContainer.classList.remove('scale-110', 'border-green-400'), 800);
     }
     
     gameOverScreen.classList.remove('hidden');
-    setTimeout(() => {
-        gameOverScreen.classList.remove('opacity-0');
-    }, 100);
+    setTimeout(() => { gameOverScreen.classList.remove('opacity-0'); }, 100);
 }
 
 function resetGame() {
@@ -629,36 +572,35 @@ function resetGame() {
     overhangs.forEach(o => scene.remove(o.mesh));
     if (activeBlock) scene.remove(activeBlock);
     
-    stack = [];
-    overhangs = [];
-    activeBlock = null;
+    stack = []; overhangs = []; activeBlock = null;
+    score = 0; combo = 0; currentSpeed = MOVE_SPEED_START; currentAxis = 'x';
+    gameOver = false; hueStart = Math.random(); 
     
-    score = 0;
-    combo = 0;
-    currentSpeed = MOVE_SPEED_START;
-    currentAxis = 'x';
-    gameOver = false;
-    hueStart = Math.random(); 
-    
-    updateScoreUI();
-    hideComboText();
-    
-    camera.position.y = 10;
+    updateScoreUI(); hideComboText(); camera.position.y = 10;
     
     gameOverScreen.classList.add('opacity-0');
     setTimeout(() => {
         gameOverScreen.classList.add('hidden');
         createBase();
+        
+        // Reset masa
+        clock.start();
+        
         spawnBlock();
     }, 500);
 }
 
-// --- Loop Animasi ---
+// --- Loop Animasi Utama (DIBAIKI DENGAN DELTA TIME) ---
 function animate() {
     requestAnimationFrame(animate);
 
+    // Dapatkan masa sebenar yang berlalu sejak frame terakhir
+    // Darab dengan 60 untuk menyamakan logik asal (kerana asalnya dibina berasaskan 60fps)
+    const deltaTime = clock.getDelta() * 60;
+
     if (gameStarted && !gameOver && activeBlock) {
-        activeBlock.position[currentAxis] += currentSpeed * movingDir;
+        // Kelajuan kini bergantung pada MASA SEBENAR, bukan frame skrin
+        activeBlock.position[currentAxis] += currentSpeed * movingDir * deltaTime;
 
         const bounds = 15;
         if (activeBlock.position[currentAxis] > bounds || activeBlock.position[currentAxis] < -bounds) {
@@ -669,18 +611,20 @@ function animate() {
 
     if (stack.length > 0) {
         const targetY = (stack.length * BLOCK_HEIGHT) + 5;
-        camera.position.y += (targetY - camera.position.y) * 0.08;
+        // Kamera juga bergerak lebih mulus
+        camera.position.y += (targetY - camera.position.y) * 0.08 * (deltaTime > 0 ? deltaTime : 1);
     }
 
+    // Fizik Serpihan (Jatuh) juga menggunakan Delta Time
     for (let i = overhangs.length - 1; i >= 0; i--) {
         const oh = overhangs[i];
-        oh.vy -= 0.015;
-        oh.mesh.position.y += oh.vy;
-        oh.mesh.position.x += oh.vx;
-        oh.mesh.position.z += oh.vz;
+        oh.vy -= 0.015 * deltaTime;
+        oh.mesh.position.y += oh.vy * deltaTime;
+        oh.mesh.position.x += oh.vx * deltaTime;
+        oh.mesh.position.z += oh.vz * deltaTime;
         
-        oh.mesh.rotation.x += oh.rx;
-        oh.mesh.rotation.z += oh.rz;
+        oh.mesh.rotation.x += oh.rx * deltaTime;
+        oh.mesh.rotation.z += oh.rz * deltaTime;
 
         if (oh.mesh.position.y < camera.position.y - 30) {
             scene.remove(oh.mesh);
