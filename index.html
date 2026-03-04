@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="ms">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Stack - Edisi Legenda (Dioptimumkan)</title>
+    <title>Stack - Legend Edition</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
     <style>
@@ -38,7 +38,7 @@
         .pointer-events-auto { pointer-events: auto; }
         body { transition: background 3s ease; }
 
-        /* --- SISTEM TIER CSS --- */
+        /* --- TIER SYSTEM CSS --- */
         .tier-d { color: #9ca3af; text-shadow: none; }
         .tier-c { color: #4ade80; text-shadow: 0 0 10px rgba(74, 222, 128, 0.6); }
         .tier-b {
@@ -69,6 +69,9 @@
             100% { transform: translate(-50%, 0) scale(1); opacity: 1; }
         }
         .combo-active { animation: popCombo 0.3s ease forwards; }
+        
+        /* Butang Retry Hover Effect */
+        #retry-btn-top:active svg { transform: rotate(-180deg); transition: transform 0.3s ease; }
     </style>
 </head>
 <body>
@@ -77,54 +80,63 @@
 
     <div id="ui-layer">
         <!-- Top Bar -->
-        <div class="absolute top-6 left-6 right-6 flex justify-between items-start">
+        <div class="absolute top-6 left-6 right-6 flex justify-between items-start pointer-events-none">
+            
+            <!-- Best Score (Top Left) -->
             <div class="flex items-center gap-3 bg-black/20 px-5 py-2 rounded-full backdrop-blur-md border border-white/20 shadow-lg transition-transform duration-300" id="best-score-container">
                 <div id="best-tier-badge" class="text-3xl font-black tier-d italic pr-1">D</div>
                 <div class="flex flex-col">
-                    <span class="text-[10px] uppercase tracking-widest text-white/70 -mb-1">Terbaik</span>
+                    <span class="text-[10px] uppercase tracking-widest text-white/70 -mb-1">Best</span>
                     <span id="best-score-val" class="text-xl font-bold text-white">0</span>
                 </div>
             </div>
+
+            <!-- Retry Button (Top Right) -->
+            <button id="retry-btn-top" class="pointer-events-auto bg-black/20 hover:bg-black/30 p-3 rounded-full backdrop-blur-md border border-white/20 shadow-lg transition-all active:scale-90 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+            </button>
         </div>
 
         <!-- Center Top Area -->
         <div class="absolute top-24 left-1/2 transform -translate-x-1/2 flex flex-col items-center">
             <div id="score-display" class="text-8xl font-black text-white drop-shadow-lg transition-all transform scale-100 mb-2">0</div>
             <div id="combo-display" class="text-2xl font-black text-yellow-300 drop-shadow-md opacity-0 absolute top-full mt-2 whitespace-nowrap tracking-wide">
-                Sempurna!
+                Perfect!
             </div>
         </div>
 
         <!-- Start Screen -->
         <div id="start-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/10 backdrop-blur-sm pointer-events-auto transition-opacity duration-500">
             <h1 class="text-7xl font-extrabold text-white mb-2 drop-shadow-xl tracking-wider">STACK</h1>
-            <p class="text-white/90 mb-8 text-2xl font-medium drop-shadow-md animate-pulse">Ketuk layar untuk mula</p>
+            <p class="text-white/90 mb-8 text-2xl font-medium drop-shadow-md animate-pulse">Tap to Start</p>
         </div>
 
         <!-- Game Over Screen -->
         <div id="game-over-screen" class="absolute inset-0 flex flex-col items-center justify-center bg-black/50 backdrop-blur-md pointer-events-auto opacity-0 hidden transition-opacity duration-500">
             <div class="bg-white/10 p-10 rounded-3xl backdrop-blur-xl flex flex-col items-center shadow-2xl border border-white/20 min-w-[320px]">
-                <h2 class="text-2xl font-bold text-white mb-2 drop-shadow-lg text-center uppercase tracking-widest text-white/80">Permainan Tamat</h2>
+                <h2 class="text-2xl font-bold text-white mb-2 drop-shadow-lg text-center uppercase tracking-widest text-white/80">Game Over</h2>
                 <div class="text-8xl font-black text-white mb-6 drop-shadow-xl" id="final-score-text">0</div>
                 <div class="flex items-center justify-center gap-4 mb-10 bg-black/30 w-full py-4 rounded-2xl border border-white/10">
                     <span id="final-tier-badge" class="text-5xl font-black italic">D</span>
-                    <span id="final-tier-name" class="text-lg font-bold uppercase tracking-widest text-white/80">Pemula</span>
+                    <span id="final-tier-name" class="text-lg font-bold uppercase tracking-widest text-white/80">Beginner</span>
                 </div>
                 <button id="restart-btn" class="w-full py-4 bg-white text-blue-600 font-bold rounded-full shadow-xl hover:scale-105 transition-all active:scale-95 text-xl pointer-events-auto">
-                    Cuba Lagi
+                    Try Again
                 </button>
             </div>
         </div>
     </div>
 
 <script>
-// --- Fungsi Sistem Tier ---
+// --- Fungsi Sistem Tier (Inggeris) ---
 function getTierInfo(score) {
-    if (score <= 20) return { label: 'D', className: 'tier-d', name: 'Pemula' };
-    if (score <= 40) return { label: 'C', className: 'tier-c', name: 'Biasa' };
-    if (score <= 70) return { label: 'B', className: 'tier-b', name: 'Mahir' };
-    if (score <= 100) return { label: 'A', className: 'tier-a', name: 'Epik' };
-    return { label: 'S', className: 'tier-s', name: 'Legenda' };
+    if (score <= 20) return { label: 'D', className: 'tier-d', name: 'Beginner' };
+    if (score <= 40) return { label: 'C', className: 'tier-c', name: 'Normal' };
+    if (score <= 70) return { label: 'B', className: 'tier-b', name: 'Skilled' };
+    if (score <= 100) return { label: 'A', className: 'tier-a', name: 'Epic' };
+    return { label: 'S', className: 'tier-s', name: 'Legend' };
 }
 
 // --- Audio API ---
@@ -168,12 +180,19 @@ function playCozyTone(freq, type = 'sine', attack = 0.05, release = 0.5, volume 
 function playDropSound() { playCozyTone(180, 'sine', 0.02, 0.3, 0.7); }
 
 function playPerfectSound(comboCount) {
+    // Ini adalah array yang lama, dikembalikan sepenuhnya
     const pentatonic = [261.63, 293.66, 329.63, 392.00, 440.00, 523.25, 587.33, 659.25, 783.99, 880.00];
-    const noteIndex = comboCount % pentatonic.length;
+    
+    // Kunci maksima combo pada 2 (kerana index bermula dari 0. Maka 0, 1, 2 = perfect ke-3)
+    const cappedCombo = Math.min(comboCount, 2);
+    
+    const noteIndex = cappedCombo % pentatonic.length;
     const freq = pentatonic[noteIndex];
     
     playCozyTone(freq, 'sine', 0.05, 0.8, 0.6); 
-    if (comboCount > 3) playCozyTone(freq * 1.5, 'sine', 0.1, 0.6, 0.2); 
+    
+    // Kod harmoni lama
+    if (cappedCombo > 3) playCozyTone(freq * 1.5, 'sine', 0.1, 0.6, 0.2); 
 }
 
 function playGameOverSound() {
@@ -187,7 +206,6 @@ let stack = [];
 let overhangs = [];
 let activeBlock = null;
 
-// TAMBAHAN BARU: Clock untuk mengukur Delta Time
 const clock = new THREE.Clock(); 
 
 const BLOCK_HEIGHT = 1;
@@ -197,7 +215,7 @@ let currentSpeed = MOVE_SPEED_START;
 const TOLERANCE = 0.25;
 
 let score = 0;
-let bestScore = parseInt(localStorage.getItem('stack_best_score_tier_v3')) || 0;
+let bestScore = parseInt(localStorage.getItem('stack_best_score_tier_v3_eng')) || 0;
 let combo = 0;
 let gameStarted = false;
 let gameOver = false;
@@ -216,6 +234,7 @@ const comboDisplay = document.getElementById('combo-display');
 const startScreen = document.getElementById('start-screen');
 const gameOverScreen = document.getElementById('game-over-screen');
 const restartBtn = document.getElementById('restart-btn');
+const topRetryBtn = document.getElementById('retry-btn-top');
 
 const finalScoreText = document.getElementById('final-score-text');
 const finalTierBadge = document.getElementById('final-tier-badge');
@@ -242,11 +261,7 @@ function init() {
 
     renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
     renderer.setSize(window.innerWidth, window.innerHeight);
-    
-    // PENGOPTIMUMAN PRESTASI BARU: 
-    // Hadkan Pixel Ratio kepada maksimum 2 (mengelakkan lag di telefon beresolusi super tinggi)
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    
     renderer.shadowMap.enabled = true;
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     document.getElementById('game-container').appendChild(renderer.domElement);
@@ -257,7 +272,6 @@ function init() {
     const dirLight = new THREE.DirectionalLight(0xffffff, 0.5);
     dirLight.position.set(10, 20, 5);
     dirLight.castShadow = true;
-    // PENGOPTIMUMAN PRESTASI BARU: Kurangkan resolusi bayang-bayang sedikit untuk Webview
     dirLight.shadow.mapSize.width = 512;
     dirLight.shadow.mapSize.height = 512;
     dirLight.shadow.camera.left = -15;
@@ -268,7 +282,13 @@ function init() {
 
     window.addEventListener('resize', onWindowResize, false);
 
-    const triggerInteraction = () => {
+    const triggerInteraction = (e) => {
+        // Abaikan jika menekan butang UI
+        if (e && e.target) {
+            const isButton = e.target.closest('button');
+            if (isButton) return;
+        }
+
         initAudio();
         if (!gameStarted) startGame();
         else if (!gameOver) handleInteraction();
@@ -276,16 +296,15 @@ function init() {
 
     window.addEventListener('mousedown', triggerInteraction);
     window.addEventListener('touchstart', (e) => { 
-        if(e.target === restartBtn) return; 
-        e.preventDefault(); 
-        triggerInteraction(); 
+        if(!e.target.closest('button')) {
+            e.preventDefault(); 
+            triggerInteraction(e);
+        }
     }, { passive: false });
     window.addEventListener('keydown', (e) => { if (e.code === 'Space') triggerInteraction(); });
 
-    restartBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        resetGame();
-    });
+    restartBtn.addEventListener('click', (e) => { e.stopPropagation(); resetGame(); });
+    topRetryBtn.addEventListener('click', (e) => { e.stopPropagation(); resetGame(); });
 
     createBase();
     animate();
@@ -521,7 +540,7 @@ function updateScoreUI() {
 
 function showComboText(count) {
     if (count > 1) {
-        comboDisplay.innerText = `Sempurna x${count}!`;
+        comboDisplay.innerText = `Perfect x${count}!`;
         comboDisplay.classList.remove('combo-active');
         void comboDisplay.offsetWidth; 
         comboDisplay.classList.add('combo-active');
@@ -537,10 +556,7 @@ function startGame() {
     startScreen.classList.add('opacity-0');
     setTimeout(() => { startScreen.classList.add('hidden'); }, 500);
     gameStarted = true;
-    
-    // Mulakan jam (clock) selepas pemain klik Mula
     clock.start();
-    
     spawnBlock();
 }
 
@@ -557,7 +573,7 @@ function endGame() {
 
     if (score > bestScore) {
         bestScore = score;
-        localStorage.setItem('stack_best_score_tier_v3', bestScore.toString());
+        localStorage.setItem('stack_best_score_tier_v3_eng', bestScore.toString());
         updateBestScoreUI(bestScore);
         bestScoreContainer.classList.add('scale-110', 'border-green-400');
         setTimeout(() => bestScoreContainer.classList.remove('scale-110', 'border-green-400'), 800);
@@ -568,9 +584,21 @@ function endGame() {
 }
 
 function resetGame() {
-    stack.forEach(b => scene.remove(b.mesh));
-    overhangs.forEach(o => scene.remove(o.mesh));
-    if (activeBlock) scene.remove(activeBlock);
+    stack.forEach(b => {
+        scene.remove(b.mesh);
+        b.mesh.geometry.dispose();
+        b.mesh.material.dispose();
+    });
+    overhangs.forEach(o => {
+        scene.remove(o.mesh);
+        o.mesh.geometry.dispose();
+        o.mesh.material.dispose();
+    });
+    if (activeBlock) {
+        scene.remove(activeBlock);
+        activeBlock.geometry.dispose();
+        activeBlock.material.dispose();
+    }
     
     stack = []; overhangs = []; activeBlock = null;
     score = 0; combo = 0; currentSpeed = MOVE_SPEED_START; currentAxis = 'x';
@@ -583,23 +611,20 @@ function resetGame() {
         gameOverScreen.classList.add('hidden');
         createBase();
         
-        // Reset masa
-        clock.start();
-        
-        spawnBlock();
-    }, 500);
+        if (gameStarted) {
+            clock.start();
+            spawnBlock();
+        }
+    }, 300); 
 }
 
-// --- Loop Animasi Utama (DIBAIKI DENGAN DELTA TIME) ---
+// --- Loop Animasi Utama (DELTA TIME) ---
 function animate() {
     requestAnimationFrame(animate);
 
-    // Dapatkan masa sebenar yang berlalu sejak frame terakhir
-    // Darab dengan 60 untuk menyamakan logik asal (kerana asalnya dibina berasaskan 60fps)
     const deltaTime = clock.getDelta() * 60;
 
     if (gameStarted && !gameOver && activeBlock) {
-        // Kelajuan kini bergantung pada MASA SEBENAR, bukan frame skrin
         activeBlock.position[currentAxis] += currentSpeed * movingDir * deltaTime;
 
         const bounds = 15;
@@ -611,11 +636,9 @@ function animate() {
 
     if (stack.length > 0) {
         const targetY = (stack.length * BLOCK_HEIGHT) + 5;
-        // Kamera juga bergerak lebih mulus
         camera.position.y += (targetY - camera.position.y) * 0.08 * (deltaTime > 0 ? deltaTime : 1);
     }
 
-    // Fizik Serpihan (Jatuh) juga menggunakan Delta Time
     for (let i = overhangs.length - 1; i >= 0; i--) {
         const oh = overhangs[i];
         oh.vy -= 0.015 * deltaTime;
